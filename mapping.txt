@@ -11,3 +11,7 @@
 # 示例:
 # C:\Users\your-name\AppData\Roaming\Code\User\settings.json -> config/windows/vscode/settings.json
 # C:\Users\your-name\scoop\persist\git\etc\gitconfig -> config/windows/scoop/gitconfig
+
+# windows-terminal config
+C:\Users\2519\AppData\Local\Microsoft\Windows Terminal\settings.json ->  config/windows/scoop/windowsTerminal_settings.txt
+C:\Users\2519\Documents\PowerShell\Microsoft.PowerShell_profile.ps1 -> config/windows/scoop/pwsh_profile.txt
