@@ -1,0 +1,13 @@
+# 每行格式:
+# <windows source path> -> <repo relative path>
+#
+# source 只支持原生 Windows 路径，例如:
+# C:\Users\your-name\AppData\Roaming\Code\User\settings.json
+#
+# target 必须是当前仓库内的相对路径。
+# `go run ./cmd/winsync -action pull -path "<selector>"` 时，
+# selector 必须与某一行里的 source 字符串完全一致。
+#
+# 示例:
+# C:\Users\your-name\AppData\Roaming\Code\User\settings.json -> config/windows/vscode/settings.json
+# C:\Users\your-name\scoop\persist\git\etc\gitconfig -> config/windows/scoop/gitconfig

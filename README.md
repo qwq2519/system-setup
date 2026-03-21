@@ -1,11 +1,13 @@
 # 简介
 
-个人开发环境配置与脚本集合，主要针对 WSL/Ubuntu 22.04 + zsh，方便快速搭建或恢复环境。Windows 端仅安装基础工具（如 scoop），开发依赖集中在 WSL。
+个人开发环境配置与脚本集合，主要针对 WSL/Ubuntu 22.04 + zsh，方便快速搭建或恢复环境。Windows 端仅安装基础工具（如 scoop），开发依赖集中在 WSL。仓库同时提供一个基于 Go 的同步工具，用于把 Windows 侧配置文件按 mapping 拉取到当前项目；这个工具本身只能在 Windows 下运行。
 
 ## 目录结构
 - `scripts/linux/`: 安装脚本，当前含 `install-go.sh`（交互式获取并安装最新 Go）。
 - `config/linux/`: Linux/WSL 配置（zsh/Powerlevel10k，LazyVim Neovim 配置）。
-- `config/windows/`: Windows 相关配置占位目录。
+- `config/windows/`: Windows 配置目标目录。
+- `cmd/winsync/`: Windows 配置同步命令入口与测试。
+- `mapping.txt`: Windows 源文件到仓库目标文件的硬编码映射。
 - `docs/`: 预留文档目录。
 
 ## 环境要求
@@ -20,7 +22,19 @@ bash scripts/linux/install-go.sh
 ```  
 脚本会提示确认版本和覆盖安装；注意会 `sudo rm -rf /usr/local/go` 以替换旧版本。
 
-2) 使用配置（软链接）  
+2) 检查 Windows 配置同步状态
+```bash
+go run ./cmd/winsync -action status
+```
+如只检查单个条目，可增加 `-path`；它必须与 `mapping.txt` 中某一行的 source 或 target 完全一致。这个命令不能在 WSL/Linux 下执行。
+
+3) 从 Windows 拉取单个配置文件到仓库
+```bash
+go run ./cmd/winsync -action pull -path "C:\Users\your-name\AppData\Roaming\Code\User\settings.json"
+```
+`pull` 的 `-path` 只能填写 Windows 源文件路径，不能填写仓库里的 target 路径。建议先运行 `go run ./cmd/winsync -action list` 查看允许操作的精确 source，再执行 `pull`。
+
+4) 使用配置（软链接）  
 - zsh：  
 ```bash
 ln -sf $PWD/config/linux/zsh/.zshrc ~/.zshrc
@@ -35,7 +49,11 @@ ln -sf $PWD/config/linux/nvim ~/.config/nvim
 ## 配置说明
 - zsh：插件包含 `git`、`zsh-autosuggestions`、`zsh-syntax-highlighting`、`history-substring-search`、`z`、`extract`、`copypath`；主题为 Powerlevel10k。
 - Neovim：基于 LazyVim 模板，入口 `config/linux/nvim/init.lua`；`lua/config` 为可扩展点，`lua/plugins/example.lua` 默认返回空表，可复制改写以添加插件。格式化可参考 `stylua.toml`。
+- Windows 同步工具：使用 `flag` 读取参数，核心参数是 `-action`、`-mapping`、`-path`。`mapping.txt` 每行格式为 `<source> -> <target>`；`source` 只支持原生 Windows 路径（如 `C:\Users\...`），不支持 `/mnt/c/...` 这类 WSL 路径。`target` 必须是仓库内相对路径。`status` 的 `-path` 可以用 source 或 target，`pull` 的 `-path` 只能用 source。
 
 ## 注意事项
 - 不要整体 `sudo bash ...` 运行脚本，避免权限污染；脚本内部需要的 `sudo` 已显式调用。
-- 提交前检查是否包含个人凭据、主机名或私钥；
+- `winsync` 只能在 Windows 下运行；如果你在 WSL/Linux 里执行，它会直接报错退出。
+- `go run ./cmd/winsync -action status` 在发现缺失或差异时会返回非 0 状态码，便于后续脚本化。
+- 提交 `mapping.txt` 前注意替换或删除个人用户名路径，避免把本机信息直接提交到仓库。
+- 提交前检查是否包含个人凭据、主机名或私钥。
